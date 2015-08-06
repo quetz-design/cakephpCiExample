@@ -2,7 +2,7 @@
 # Cookbook Name:: phpenv
 # Recipe:: default
 #
-# Copyright 2015, YOUR_COMPANY_NAME
+# Copyright 2015, Monolith Works, Inc.
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -75,5 +75,5 @@ end
 execute "set_mysql_root_password" do
   command "/usr/bin/mysqladmin -u root password \"#{node['mysql']['root_password']}\""
   action :run
-  only_if "/usr/bin/mysql -u root -e 'show databases;'" 
+  only_if "/usr/bin/mysql -u root -e 'show databases;'"
 end

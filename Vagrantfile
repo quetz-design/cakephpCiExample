@@ -17,7 +17,7 @@ Vagrant.configure(2) do |config|
       :mount_options => ["dmode=775,fmode=775"]
 
     develop.vm.provision :chef_solo do |chef|
-      chef.cookbooks_path = "./chef-repo/cookbooks"
+      chef.cookbooks_path = "./cookbooks"
       chef.json = {
         nginx: {
           docroot: {
@@ -37,7 +37,10 @@ Vagrant.configure(2) do |config|
       }
       chef.run_list = %w[
         recipe[apt]
-        recipe[phpenv]
+        recipe[phpenv::default]
+        recipe[phpenv::composer]
+        recipe[phpenv::develop]
+        recipe[capistrano]
       ]
     end
   end
@@ -48,6 +51,33 @@ Vagrant.configure(2) do |config|
     ci.vm.box = "opscode-ubuntu-14.04"
     ci.vm.box_url = "http://opscode-vm-bento.s3.amazonaws.com/vagrant/virtualbox/opscode_ubuntu-14.04_chef-provisionerless.box"
     ci.vm.network :private_network, ip:"192.168.33.100"
+
+    ci.vm.provision :chef_solo do |chef|
+      chef.cookbooks_path = "./cookbooks"
+      chef.json = {
+        nginx: {
+          docroot: {
+            path: "/var/www/application/current/app/webroot",
+          },
+          default: {
+            fastcgi_params: { CAKE_ENV: "development" }
+          },
+          test: {
+            available: true,
+            fastcgi_params: { CAKE_ENV: "ci" }
+          }
+        }
+      }
+      chef.run_list = %w[
+        recipe[apt]
+        recipe[phpenv::default]
+        recipe[phpenv::composer]
+        recipe[phpenv::develop]
+        recipe[capistrano]
+        recipe[jenkins::default]
+        recipe[jenkins::plugin]
+      ]
+    end
   end
 
   config.vm.define :deploy do |deploy|
@@ -56,5 +86,26 @@ Vagrant.configure(2) do |config|
     deploy.vm.box = "opscode-ubuntu-14.04"
     deploy.vm.box_url = "http://opscode-vm-bento.s3.amazonaws.com/vagrant/virtualbox/opscode_ubuntu-14.04_chef-provisionerless.box"
     deploy.vm.network :private_network, ip:"192.168.33.200"
+
+    deploy.vm.provision :chef_solo do |chef|
+      chef.cookbooks_path = "./cookbooks"
+      chef.json = {
+        nginx: {
+          docroot: {
+            owner: "vagrant",
+            group: "vagrant",
+            path: "/var/www/application/current/app/webroot",
+          },
+          default: {
+            fastcgi_params: { CAKE_ENV: "production" }
+          }
+        }
+      }
+      chef.run_list = %w[
+        recipe[apt]
+        recipe[phpenv::default]
+        recipe[phpenv::composer]
+      ]
+    end
   end
 end
