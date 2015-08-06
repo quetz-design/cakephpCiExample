@@ -1,0 +1,8 @@
+DEPENDENCIES
+  apt
+  phpenv
+    path: site-cookbooks/phpenv
+
+GRAPH
+  apt (2.7.0)
+  phpenv (0.1.0)
